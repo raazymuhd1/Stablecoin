@@ -134,7 +134,8 @@ contract DSCEngine is IDSCEngine, ReentrancyGuard {
     // $10 profit from liquidating
 
     /**
-        @notice another user could liquidate other user position if their collateral goes below health factor, And owns the liquidated user balance. An undercollateralized measurements is based of a liquidation threshold (10%/20%/so on)
+        @notice another user could liquidate other user position if their collateral goes below health factor, And owns the liquidated user balance. An undercollateralized measurements is based of a liquidation threshold (10%/20%/so on),
+        a user B or another user must hold the more or same amount of RUSD token with the user being liquidated.
         @param collateral - a collateral assets address
         @param user - a user address
         @param debtToCover - an amount that needs tobe paid in order to liquidate another user to cover the debt of being under collateral
@@ -145,9 +146,11 @@ contract DSCEngine is IDSCEngine, ReentrancyGuard {
             revert DSCEngine_HealthFactorIsOk();
         }
 
+        // debtToCover = the amount of RUSD minted by user tobe liquidated.
         uint256 tokenAmountFromDebtCovered = getTokenAmountFromUsd(collateral, debtToCover);
+        // (0.09 ETH * LIQ_BONUS) / 100 = 0.009
         uint256 collateralBonus = (tokenAmountFromDebtCovered * LIQUIDATION_BONUS) / LIQUIDATION_PRECISION;
-        uint256 totalCollateraToRedeem = tokenAmountFromDebtCovered + collateralBonus;
+        uint256 totalCollateraToRedeem = tokenAmountFromDebtCovered + collateralBonus; // 0.099
 
         _redeemCollateral(collateral, totalCollateraToRedeem, user, msg.sender);
         _burnDSC(debtToCover, user, msg.sender);
@@ -187,6 +190,7 @@ contract DSCEngine is IDSCEngine, ReentrancyGuard {
         AggregatorV3Interface priceFeed = AggregatorV3Interface(s_tokenToPriceFeeds[collateral]);
         (, int256 price, , , ) = priceFeed.latestRoundData();
 
+            // usdAmount / token price (WETH $2000)
         return (usdAmountInWei * PRECISION) / (uint256(price) * ADDITIONAL_FEED_PRECISION);
     }
 
