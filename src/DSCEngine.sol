@@ -1,27 +1,6 @@
 // SPDX-License-Identifier: SEE LICENSE IN LICENSE
 pragma solidity ^0.8.18;
 
-// Layout of Contract:
-// version
-// imports
-// errors
-// interfaces, libraries, contracts
-// Type declarations
-// State variables
-// Events
-// Modifiers
-// Functions
-
-// Layout of Functions:
-// constructor
-// receive function (if exists)
-// fallback function (if exists)
-// external
-// public
-// internal
-// private
-// view & pure functions
-
 import {IDSCEngine} from "./interfaces/IDSCEngine.sol";
 import { RUSD } from "./RUSD.sol";
 import {ReentrancyGuard} from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
@@ -62,11 +41,11 @@ contract DSCEngine is IDSCEngine, ReentrancyGuard {
     mapping(address user => uint256 dscMinted) private s_DSCMinted;
     address[] private s_collateralTokens;
 
-    uint256 private constant ADDITIONAL_FEED_PRECISION = 1e10;
+    uint256 private constant ADDITIONAL_FEED_PRECISION = 1e10; // 10 additional decinals
     uint256 private constant PRECISION = 1e18;
-    uint256 private constant LIQUIDATION_THRESHOLD = 50;
-    uint256 private constant LIQUIDATION_PRECISION = 100;
-    uint256 private constant MIN_HEALTH_FACTOR = 1e18;
+    uint256 private constant LIQUIDATION_THRESHOLD = 50; // liq threshold 50%
+    uint256 private constant LIQUIDATION_PRECISION = 100; // liq precision 100%
+    uint256 private constant MIN_HEALTH_FACTOR = 1e18; // min health factor is 1
     uint256 private constant LIQUIDATION_BONUS = 10;
 
     RUSD private immutable i_dsc;
@@ -143,6 +122,22 @@ contract DSCEngine is IDSCEngine, ReentrancyGuard {
         redeemCollateral(tokenCollateral, amountCollateral);
     }
 
+    // liq threshold 10% lets say
+    // $200 ETH Collateral -> went down to $190
+    // $180 RUSD
+    // UNDERCOLLATERALIZED !!! and now somebody could liquidate your position for being undercollateralized
+    // somebody pays back $180 RUSD -> getting your collateral in return $190, therefore they made $10 as profit for liquidating your position
+
+    // $190 Collateral value after it went down
+    // -$180 RUSD payback to the protocol
+    // $10 profit from liquidating
+
+    /**
+        @notice another user could liquidate other user position if their collateral goes below health factor, And owns the liquidated user balance. An undercollateralized measurements is based of a liquidation threshold (10%/20%/so on)
+        @param collateral - a collateral assets address
+        @param user - a user address
+        @param debtToCover - an amount that needs tobe paid in order to liquidate another user to cover the debt of being under collateral
+     */
     function liquidate(address collateral, address user, uint256 debtToCover) external {
         uint256 startingUserHealthFactor = _healthFactor(user);
         if(startingUserHealthFactor >= MIN_HEALTH_FACTOR) {
