@@ -24,3 +24,10 @@
  - invariant is property that our system/app should always hold
 
 
+## What determined the liquidation actions
+  let's say the protocol set the `Liquidation Threshold` 80%, therefore user can only mint 80% RUSD token of their collateral value, by setting `MIN_HEALTH_FACTOR` the protocol could determined whether the `user A` collateral is `undercollateralized` or not, if it is then another user can come and liquidate the `user A` positions and earn yield. For this `Stablecoin` procotol we set `MIN_HEALTH_FACTOR`  to 1, if the user A or another user `health factor` is goes below 1, then another user can liquidate the user A positions and earn yield.
+
+## How the liquidation works
+ - supposed user A deposits $`1000` of collateral and minted `$800 RUSD` token (80% of collateral value), And later on the user A collateral value is went to `$950` or even low than that, Therefore user B or user C can liquidate a user A positions and earn profit by supplying the collateral value worth of the amount of RUSD token minted by user A and the collateral value left in the protocol will be send to the user B after liquidating it. That way we could make the protocol survive, encouraging users to keep monitoring their collateral value and making sure its always over collateralized, therefore keeping the protocol more safe and stable also providing more incentives for another users by liquidating undercollateralized user positions and earn yield.
+
+ 

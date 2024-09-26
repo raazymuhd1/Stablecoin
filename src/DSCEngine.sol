@@ -99,6 +99,7 @@ contract DSCEngine is IDSCEngine, ReentrancyGuard {
         s_collateralDeposited[msg.sender][tokenCollateralAddress] += collateralAmount;
         emit CollateralDeposited(msg.sender, tokenCollateralAddress, collateralAmount);
 
+        // Interactions
         bool success = IERC20(tokenCollateralAddress).transferFrom(msg.sender, address(this), collateralAmount);
         if(!success) {
             revert DSCEngine_TransferFailed();
@@ -167,7 +168,7 @@ contract DSCEngine is IDSCEngine, ReentrancyGuard {
     function mintDSC(uint256 amountDscToMint) public MoreThanZero(amountDscToMint) nonReentrant {
         s_DSCMinted[msg.sender] += amountDscToMint;
 
-        // this checking to ensure that user can only mint DSC below their collateral value ( $100 collateral => mint DSC $50 )
+        // this checking to ensure that user can only mint DSC below their collateral value ( $100 collateral => mint DSC $50 for 50% liq threshold )
         _revertIfTotalCollateralBelowHealthFactor(msg.sender);
         bool minted = i_dsc.mint(msg.sender, amountDscToMint);
         if(!minted) {
@@ -223,9 +224,12 @@ contract DSCEngine is IDSCEngine, ReentrancyGuard {
         returns (uint256)
     {
         if (totalDscMinted == 0) return type(uint256).max;
+        // if liq threshold is 80% of the collateral value (ex: $1000 collateral value, then u can mint $800 of RUSD token)
+        // (1000 * 80) / 100 = 800 (80% from collateral value)
         uint256 collateralAdjustedForThreshold = (collateralValueInUsd * LIQUIDATION_THRESHOLD) / LIQUIDATION_PRECISION;
         return (collateralAdjustedForThreshold * PRECISION) / totalDscMinted;
     }
+
 
     /**
      * health factor is a checking to how close the user collateral amount to liquidation is 
@@ -239,6 +243,10 @@ contract DSCEngine is IDSCEngine, ReentrancyGuard {
 
     function _revertIfTotalCollateralBelowHealthFactor(address user) internal view returns(uint256) {
         uint256 userHealthFactor = _healthFactor(user);
+        // if u want to mint 1000 of RUSD, then u need to supply $1200 of collateral assets
+        // if user health factor is above 1, then its healthy and fine
+        // revert if user health factor is below 1, health factor determined by 
+        // ((collateral value in usd * collateral percentage) / 100 * 1e18) / RUSD minted
         if(userHealthFactor < MIN_HEALTH_FACTOR) {
             revert DSCEngine_BreaksHealthFactor();
         }
