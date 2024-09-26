@@ -3,15 +3,15 @@ pragma solidity ^0.8.18;
 
 import { Test, console } from "forge-std/Test.sol";
 import { DSCEngine } from "../../src/DSCEngine.sol";
-import { DecentralizedStableCoin } from "../../src/DecentralizedStablecoin.sol";
-import { DeployDSC } from "../../script/DeployDSC.s.sol";
+import { RUSD } from "../../src/RUSD.sol";
+import { DeployRUSD } from "../../script/DeployRUSD.s.sol";
 import { HelperConfig } from "../../script/HelperConfig.s.sol";
 import { MockERC20 } from "../mocks/MockERC20.t.sol";
  
 contract DSCEngineTest is Test {
-    DecentralizedStableCoin dsc;
+    RUSD dsc;
     DSCEngine dscEngine;
-    DeployDSC deployer;
+    DeployRUSD deployer;
     HelperConfig config;
 
     address private constant USER = address(1);
@@ -22,9 +22,9 @@ contract DSCEngineTest is Test {
     address private weth;
 
     function setUp() public {
-        deployer = new DeployDSC();
+        deployer = new DeployRUSD();
         //  two ways to get value from return function and assign to var;
-        (DecentralizedStableCoin dsc_, DSCEngine dscEngine_, HelperConfig config_ ) = deployer.run();
+        (RUSD dsc_, DSCEngine dscEngine_, HelperConfig config_ ) = deployer.run();
          config = config_;
         (ethUsdPriceFeed, btcUsdPriceFeed, weth , ,) = config.activeNetwork(); 
 

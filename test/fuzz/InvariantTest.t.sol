@@ -11,23 +11,23 @@ pragma solidity ^0.8.18;
 import { Test, console } from "forge-std/Test.sol";
 import { StdInvariant } from "forge-std/StdInvariant.sol";
 import {  DSCEngine } from "../../src/DSCEngine.sol";
-import { DeployDSC } from "../../script/DeployDSC.s.sol";
 import { HelperConfig } from "../../script//HelperConfig.s.sol";
-import { DecentralizedStableCoin } from "../../src/DecentralizedStablecoin.sol";
+import { DeployRUSD } from "../../script/DeployRUSD.s.sol";
+import { RUSD } from "../../src/RUSD.sol";
 import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import { Handler } from "./Handler.t.sol";
 
 contract InvariantsTest is StdInvariant, Test {
-    DeployDSC deployer;
+    DeployRUSD deployer;
     DSCEngine dscEngine;
-    DecentralizedStableCoin dsc;
+    RUSD dsc;
     HelperConfig config;
     Handler handler;
     address weth;
     address wbtc;
 
     function setUp() public {
-        deployer = new DeployDSC();
+        deployer = new DeployRUSD();
         (dsc, dscEngine, config) = deployer.run();
         // targetContract(address(dscEngine)); // target contract to run an invariant test
         targetContract(address(handler)); // target contract to run an invariant test

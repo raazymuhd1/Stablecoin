@@ -1,27 +1,6 @@
 // SPDX-Licenses-Identifier: MIT;
 pragma solidity ^0.8.18;
 
-// Layout of Contract:
-// version
-// imports
-// errors
-// interfaces, libraries, contracts
-// Type declarations
-// State variables
-// Events
-// Modifiers
-// Functions
-
-// Layout of Functions:
-// constructor
-// receive function (if exists)
-// fallback function (if exists)
-// external
-// public
-// internal
-// private
-// view & pure functions
-
 import {ERC20Burnable, ERC20} from "@openzeppelin/contracts/token/ERC20/extensions/ERC20Burnable.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 
@@ -29,15 +8,15 @@ import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
  * @title DecentralizedStablecoin
  * @author Mohammed raazy
  * Collateral: exogenuos ( ETH & BTC )
- * Minting: Algorithmic
+ * Stability Mechanism: Algorithmic
  * Relative Stability: pegged to USD
  *
  * THIS CONTRACT IS MEANT TO BE GOVERNED BY DSCEngine, this contract is just an ERC20 implementation
  */
-contract DecentralizedStableCoin is ERC20Burnable, Ownable {
-    error DecentralizedStablecoin_MustBeMoreThanZero();
-    error DecentralizedStablecoin_BurnAmountExceedsBalance();
-    error DecentralizedStablecoin_CannotZeroAddress();
+contract RUSD is ERC20Burnable, Ownable {
+    error RUSD_MustBeMoreThanZero();
+    error RUSD_BurnAmountExceedsBalance();
+    error RUSD_CannotZeroAddress();
 
     address private immutable i_owner;
 
@@ -47,7 +26,7 @@ contract DecentralizedStableCoin is ERC20Burnable, Ownable {
      *
      * @param contractOwner_ whomever the owner of this contract
      */
-    constructor(address contractOwner_) ERC20("DecentralizedStablecoin", "DSC") Ownable(contractOwner_) {
+    constructor(address contractOwner_) ERC20("RUSD", "RUSD") Ownable(contractOwner_) {
          i_owner = contractOwner_;
     }
 
@@ -55,9 +34,9 @@ contract DecentralizedStableCoin is ERC20Burnable, Ownable {
         uint256 balance = balanceOf(msg.sender);
 
         if (amount_ <= 0) {
-            revert DecentralizedStablecoin_MustBeMoreThanZero();
+            revert RUSD_MustBeMoreThanZero();
         } else if (balance < amount_) {
-            revert DecentralizedStablecoin_BurnAmountExceedsBalance();
+            revert RUSD_BurnAmountExceedsBalance();
         }
 
         super.burn(amount_);
@@ -65,11 +44,11 @@ contract DecentralizedStableCoin is ERC20Burnable, Ownable {
 
     function mint(address to_, uint256 amount_) external onlyOwner returns (bool) {
         if (msg.sender == address(0)) {
-            revert DecentralizedStablecoin_CannotZeroAddress();
+            revert RUSD_CannotZeroAddress();
         }
 
         if (amount_ <= 0) {
-            revert DecentralizedStablecoin_MustBeMoreThanZero();
+            revert RUSD_MustBeMoreThanZero();
         }
 
         _mint(to_, amount_);

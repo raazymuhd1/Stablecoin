@@ -23,13 +23,13 @@ pragma solidity ^0.8.18;
 // view & pure functions
 
 import {IDSCEngine} from "./interfaces/IDSCEngine.sol";
-import {DecentralizedStableCoin} from "./DecentralizedStablecoin.sol";
+import { RUSD } from "./RUSD.sol";
 import {ReentrancyGuard} from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import { IERC20 } from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import { AggregatorV3Interface } from "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
 /*
  * @title DSCEngine
- * @author Patrick Collins
+ * @author Mohammed Raazy
  *
  * The system is designed to be as minimal as possible, and have the tokens maintain a 1 token == $1 peg at all times.
  * This is a stablecoin with the properties:
@@ -69,7 +69,7 @@ contract DSCEngine is IDSCEngine, ReentrancyGuard {
     uint256 private constant MIN_HEALTH_FACTOR = 1e18;
     uint256 private constant LIQUIDATION_BONUS = 10;
 
-    DecentralizedStableCoin private immutable i_dsc;
+    RUSD private immutable i_dsc;
 
     /////////////////// EVENTS /////////////////////////////
     event CollateralDeposited(address indexed depositor, address collateralToken, uint256 collateralAmount);
@@ -103,7 +103,7 @@ contract DSCEngine is IDSCEngine, ReentrancyGuard {
             s_collateralTokens.push(tokenAddresses[i]); // insert all collateral tokens
         }
 
-        i_dsc = DecentralizedStableCoin(dscTokenAddress);
+        i_dsc = RUSD(dscTokenAddress);
     }
 
     /**

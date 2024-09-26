@@ -5,18 +5,18 @@ pragma solidity ^0.8.18;
 
 import { Test } from "forge-std/Test.sol";
 import { DSCEngine } from "../../src/DSCEngine.sol";
-import { DecentralizedStableCoin } from "../../src/DecentralizedStablecoin.sol";
+import { RUSD } from "../../src/RUSD.sol";
 import { MockERC20 } from "../mocks/MockERC20.t.sol";
 
 
 contract Handler is Test {
     DSCEngine dscEngine;
-    DecentralizedStableCoin dsc;
+    RUSD dsc;
 
     MockERC20 weth;
     MockERC20 wbtc;
 
-    constructor(DSCEngine dscEngine_, DecentralizedStableCoin dsc_) {
+    constructor(DSCEngine dscEngine_, RUSD dsc_) {
         dscEngine = dscEngine_;
         dsc = dsc_;
 
