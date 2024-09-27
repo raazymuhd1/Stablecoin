@@ -260,6 +260,11 @@ contract DSCEngine is IDSCEngine, ReentrancyGuard {
 
     ////////////////// public & external functions ////////////////////////////
 
+    /**
+        @dev calculating health factor to determined user positions liquidation
+        @param totalDscMinted - total RUSD minted by user
+        @param collateralValueInUsd - value of collateral in USD
+     */
      function calculateHealthFactor(uint256 totalDscMinted, uint256 collateralValueInUsd)
         external
         pure
@@ -282,6 +287,11 @@ contract DSCEngine is IDSCEngine, ReentrancyGuard {
         return s_collateralDeposited[user][token];
     }
 
+    /**
+        @notice get a token value in USD
+        @param token - a token address
+        @param amount - a token amount
+     */
      function getUsdValue(address token, uint256 amount) public view returns(uint256) {
             AggregatorV3Interface priceFeed = AggregatorV3Interface(s_tokenToPriceFeeds[token]);
             (,int256 price,,,) = priceFeed.latestRoundData();
