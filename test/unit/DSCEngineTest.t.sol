@@ -16,7 +16,8 @@ contract DSCEngineTest is Test {
 
     address private constant USER = address(1);
     address private constant INITIAL_OWNER = 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266;
-    uint256 private constant AMOUNT_COLLATERAL = 10 ether;
+    uint256 private constant AMOUNT_COLLATERAL = 130 ether;
+    address private constant UNALLOWED_TOKEN = address(0);
     address private ethUsdPriceFeed;
     address private btcUsdPriceFeed;
     address private weth;
@@ -33,7 +34,7 @@ contract DSCEngineTest is Test {
 
         vm.prank(INITIAL_OWNER);
         dsc.transferOwnership(address(dscEngine));
-        MockERC20(weth).mint(USER, 10);
+        MockERC20(weth).mint(USER, 100);
     }
 
     /////////////////// constructor test /////////////////////////
@@ -109,6 +110,21 @@ contract DSCEngineTest is Test {
 
         assertEq(totalDscMinted, expectedDscMinted);
         assertEq(AMOUNT_COLLATERAL, expectedDepositAmount);
+    }
+
+    function test_notEnoughCollateralBalance() public {
+        vm.prank(USER);
+        MockERC20(weth).approve(address(dscEngine), AMOUNT_COLLATERAL);
+        uint256 senderBalance = MockERC20(weth).balanceOf(USER);
+        uint256 allowances = MockERC20(weth).allowance(USER, address(dscEngine));
+
+        vm.expectRevert(
+         abi.encodeWithSelector(DSCEngine.DSCEngine_InsufficientCollateralBalance.selector, AMOUNT_COLLATERAL, senderBalance)
+        );
+        
+        dscEngine.depositCollateral(weth, 150 ether);
+
+        assertEq(allowances, AMOUNT_COLLATERAL);
     }
 
 }

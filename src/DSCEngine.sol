@@ -34,6 +34,7 @@ contract DSCEngine is IDSCEngine, ReentrancyGuard {
     error DSCEngine_MintFailed();
     error DSCEngine_HealthFactorIsOk();
     error DSCEngine_HealthFactorNotImproved();
+    error DSCEngine_InsufficientCollateralBalance(uint256 collateralAmount, uint256 balance);
 
     ////////////////////// STATE VARIABLES ///////////////////////
     mapping(address token => address priceFeed) private s_tokenToPriceFeeds;
@@ -95,6 +96,15 @@ contract DSCEngine is IDSCEngine, ReentrancyGuard {
         isAllowedToken(tokenCollateralAddress)
         nonReentrant
     {
+        address[] memory collateralAssets = s_collateralTokens;
+
+        for(uint256 i = 0; i < collateralAssets.length; i++) {
+            uint256 senderBalance = IERC20(collateralAssets[i]).balanceOf(msg.sender);
+            if(senderBalance == 0 || senderBalance <= collateralAmount) {
+                revert DSCEngine_InsufficientCollateralBalance(collateralAmount, senderBalance);
+            }
+        }
+
         //  Effect
         s_collateralDeposited[msg.sender][tokenCollateralAddress] += collateralAmount;
         emit CollateralDeposited(msg.sender, tokenCollateralAddress, collateralAmount);
