@@ -181,6 +181,9 @@ contract DSCEngine is IDSCEngine, ReentrancyGuard {
     function mintDSC(uint256 amountDscToMint) public MoreThanZero(amountDscToMint) nonReentrant {
         s_DSCMinted[msg.sender] += amountDscToMint;
 
+        // needs to do the checking for the collateral value being deposited before perform the minting
+        // mints only 80% of the collateral value being deposited. 
+
         // this checking to ensure that user can only mint DSC below their collateral value ( $100 collateral => mint DSC $50 for 50% liq threshold )
         _revertIfTotalCollateralBelowHealthFactor(msg.sender);
         bool minted = i_dsc.mint(msg.sender, amountDscToMint);

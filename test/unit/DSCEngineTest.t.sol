@@ -127,4 +127,11 @@ contract DSCEngineTest is Test {
         assertEq(allowances, AMOUNT_COLLATERAL);
     }
 
+    function test_depositCollateralAndMint() public {
+        vm.startPrank(USER);
+        uint256 userInitBalance = dsc.balanceOf(USER);
+
+        dscEngine.depositCollateralAndMintDSC(weth, AMOUNT_COLLATERAL, amountDscToMint);
+    }
+
 }
