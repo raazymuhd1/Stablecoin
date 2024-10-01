@@ -197,8 +197,6 @@ contract DSCEngine is IDSCEngine, ReentrancyGuard {
          _revertIfTotalCollateralBelowHealthFactor(msg.sender);
     }
 
-    function getHealtFactor() external view {}
-
     function getTokenAmountFromUsd(address collateral, uint256 usdAmountInWei) public view returns(uint256) {
         AggregatorV3Interface priceFeed = AggregatorV3Interface(s_tokenToPriceFeeds[collateral]);
         (, int256 price, , , ) = priceFeed.latestRoundData();
