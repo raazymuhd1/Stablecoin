@@ -16,7 +16,8 @@ contract DSCEngineTest is Test {
 
     address private constant USER = address(1);
     address private constant INITIAL_OWNER = 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266;
-    uint256 private constant AMOUNT_COLLATERAL = 130 ether;
+    uint256 private constant AMOUNT_COLLATERAL = 1 ether;
+    uint256 private constant RUSD_AMOUNT = 100e18;
     address private constant UNALLOWED_TOKEN = address(0);
     address private ethUsdPriceFeed;
     address private btcUsdPriceFeed;
@@ -130,8 +131,12 @@ contract DSCEngineTest is Test {
     function test_depositCollateralAndMint() public {
         vm.startPrank(USER);
         uint256 userInitBalance = dsc.balanceOf(USER);
+        dscEngine.depositCollateralAndMintDSC(weth, AMOUNT_COLLATERAL, RUSD_AMOUNT);
 
-        dscEngine.depositCollateralAndMintDSC(weth, AMOUNT_COLLATERAL, amountDscToMint);
+        uint256 userAfterBalance = dsc.balanceOf(USER);
+        vm.stopPrank();
+
+        assert(userAfterBalance > userInitBalance);
     }
 
 }

@@ -243,8 +243,7 @@ contract DSCEngine is IDSCEngine, ReentrancyGuard {
         // (1000 * 80) / 100 = 800 (80% from collateral value)
         uint256 collateralAdjustedForThreshold = (collateralValueInUsd * LIQUIDATION_THRESHOLD) / LIQUIDATION_PRECISION;
         return (collateralAdjustedForThreshold * PRECISION) / totalDscMinted;
-    }
-
+    }  
 
     /**
      * health factor is a checking to how close the user collateral amount to liquidation is 
@@ -315,7 +314,7 @@ contract DSCEngine is IDSCEngine, ReentrancyGuard {
          return (totalDscMinted, collateralValueInUsd);
      }
 
-       function getPrecision() external pure returns (uint256) {
+    function getPrecision() external pure returns (uint256) {
         return PRECISION;
     }
 
