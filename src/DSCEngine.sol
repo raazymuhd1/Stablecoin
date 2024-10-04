@@ -35,6 +35,7 @@ contract DSCEngine is IDSCEngine, ReentrancyGuard {
     error DSCEngine_HealthFactorIsOk();
     error DSCEngine_HealthFactorNotImproved();
     error DSCEngine_InsufficientCollateralBalance();
+    error DSCEngine_ZeroCollateralAvailable();
 
     ////////////////////// STATE VARIABLES ///////////////////////
     mapping(address token => address priceFeed) private s_tokenToPriceFeeds;
@@ -69,6 +70,12 @@ contract DSCEngine is IDSCEngine, ReentrancyGuard {
         if (s_tokenToPriceFeeds[token] == address(0)) {
             revert DSCEngine_NotAllowedToken();
         }
+        _;
+    }
+
+    modifier CollateralMoreThanZero(address user, address collateralToken) {
+        uint256 userCollateral = s_collateralDeposited[user][collateralToken];
+        if(userCollateral <= 0) revert DSCEngine_ZeroCollateralAvailable();
         _;
     }
 
@@ -114,7 +121,7 @@ contract DSCEngine is IDSCEngine, ReentrancyGuard {
         }
     }
 
-    function redeemCollateral(address tokenCollateral, uint256 amountCollateral) public MoreThanZero(amountCollateral) {
+    function redeemCollateral(address tokenCollateral, uint256 amountCollateral) public CollateralMoreThanZero(msg.sender, tokenCollateral) MoreThanZero(amountCollateral) {
         _redeemCollateral(tokenCollateral, amountCollateral, msg.sender, msg.sender);
         _revertIfTotalCollateralBelowHealthFactor(msg.sender);
     }

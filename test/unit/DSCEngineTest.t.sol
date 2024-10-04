@@ -142,4 +142,32 @@ contract DSCEngineTest is Test {
         assert(userAfterBalance > userInitBalance);
     }
 
+    function test_depositCollateralAndBreaksHealthFactor() public {
+        uint256 rusdAmount = 1400 ether;
+        vm.startPrank(USER);
+        uint256 userInitBalance = dsc.balanceOf(USER);
+        MockERC20(weth).approve(address(dscEngine), AMOUNT_COLLATERAL);
+        vm.expectRevert(DSCEngine.DSCEngine_BreaksHealthFactor.selector);
+        dscEngine.depositCollateralAndMintDSC(weth, AMOUNT_COLLATERAL, rusdAmount);     
+
+        uint256 userAfterBalance = dsc.balanceOf(USER);
+        console.log("after balance", userAfterBalance);
+        vm.stopPrank();
+
+        assert(userAfterBalance == userInitBalance);
+    }
+
+    function test_redeemZeroCollateral() public {
+        vm.startPrank(USER);
+        uint256 userBalanceBfore = MockERC20(weth).balanceOf(USER);
+        vm.expectRevert(DSCEngine.DSCEngine_ZeroCollateralAvailable.selector);
+        dscEngine.redeemCollateral(weth, AMOUNT_COLLATERAL);
+
+        uint256 userBalanceAfter = MockERC20(weth).balanceOf(USER);
+        vm.stopPrank();
+
+        console.log("cannot redeem zero collateral");
+        assert(userBalanceAfter == userBalanceBfore);
+    }
+
 }
