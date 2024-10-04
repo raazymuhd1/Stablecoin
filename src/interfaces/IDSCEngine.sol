@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: SEE LICENSE IN LICENSE
+// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.18;
 
 /**
@@ -10,8 +10,6 @@ pragma solidity ^0.8.18;
 interface IDSCEngine {
     function depositCollateralAndMintDSC(address collateralToken, uint256 collateralAmount, uint256 amountDscToMint) external;
 
-    function depositCollateralForDSC() external;
-
     function depositCollateral(address tokenCollateralAddress, uint256 collateralAmount) external;
 
     function mintDSC(uint256 amountDscToMint) external;
@@ -20,6 +18,6 @@ interface IDSCEngine {
 
     function liquidate(address collateral, address user, uint256 debtToCover) external;
 
-    function getHealtFactor() external view;
+    function getHealthFactor(address user) external view returns(uint256);
 
 }

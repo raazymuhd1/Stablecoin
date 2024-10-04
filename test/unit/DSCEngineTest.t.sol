@@ -7,24 +7,28 @@ import { RUSD } from "../../src/RUSD.sol";
 import { DeployRUSD } from "../../script/DeployRUSD.s.sol";
 import { HelperConfig } from "../../script/HelperConfig.s.sol";
 import { MockERC20 } from "../mocks/MockERC20.t.sol";
+import { MockV3Aggregator } from "../mocks/MockV3Aggregator.t.sol";
  
 contract DSCEngineTest is Test {
     RUSD dsc;
     DSCEngine dscEngine;
     DeployRUSD deployer;
     HelperConfig config;
+    MockV3Aggregator mockV3Aggregator;
 
     address private constant USER = address(1);
     address private constant INITIAL_OWNER = 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266;
     uint256 private constant AMOUNT_COLLATERAL = 1 ether;
-    uint256 private constant RUSD_AMOUNT = 100e18;
+    uint256 private constant RUSD_AMOUNT = 1000 ether;
     address private constant UNALLOWED_TOKEN = address(0);
     address private ethUsdPriceFeed;
     address private btcUsdPriceFeed;
     address private weth;
 
+
     function setUp() public {
         deployer = new DeployRUSD();
+        mockV3Aggregator = new MockV3Aggregator(8, 0);
         //  two ways to get value from return function and assign to var;
         (RUSD dsc_, DSCEngine dscEngine_, HelperConfig config_ ) = deployer.run();
          config = config_;
@@ -35,7 +39,7 @@ contract DSCEngineTest is Test {
 
         vm.prank(INITIAL_OWNER);
         dsc.transferOwnership(address(dscEngine));
-        MockERC20(weth).mint(USER, 100);
+        MockERC20(weth).mint(USER, 100 ether);
     }
 
     /////////////////// constructor test /////////////////////////
@@ -119,10 +123,7 @@ contract DSCEngineTest is Test {
         uint256 senderBalance = MockERC20(weth).balanceOf(USER);
         uint256 allowances = MockERC20(weth).allowance(USER, address(dscEngine));
 
-        vm.expectRevert(
-         abi.encodeWithSelector(DSCEngine.DSCEngine_InsufficientCollateralBalance.selector, AMOUNT_COLLATERAL, senderBalance)
-        );
-        
+        vm.expectRevert(DSCEngine.DSCEngine_InsufficientCollateralBalance.selector);
         dscEngine.depositCollateral(weth, 150 ether);
 
         assertEq(allowances, AMOUNT_COLLATERAL);
@@ -131,9 +132,11 @@ contract DSCEngineTest is Test {
     function test_depositCollateralAndMint() public {
         vm.startPrank(USER);
         uint256 userInitBalance = dsc.balanceOf(USER);
+        MockERC20(weth).approve(address(dscEngine), AMOUNT_COLLATERAL);
         dscEngine.depositCollateralAndMintDSC(weth, AMOUNT_COLLATERAL, RUSD_AMOUNT);
 
         uint256 userAfterBalance = dsc.balanceOf(USER);
+        console.log("after balance", userAfterBalance);
         vm.stopPrank();
 
         assert(userAfterBalance > userInitBalance);

@@ -34,7 +34,7 @@ contract DSCEngine is IDSCEngine, ReentrancyGuard {
     error DSCEngine_MintFailed();
     error DSCEngine_HealthFactorIsOk();
     error DSCEngine_HealthFactorNotImproved();
-    error DSCEngine_InsufficientCollateralBalance(uint256 collateralAmount, uint256 balance);
+    error DSCEngine_InsufficientCollateralBalance();
 
     ////////////////////// STATE VARIABLES ///////////////////////
     mapping(address token => address priceFeed) private s_tokenToPriceFeeds;
@@ -90,19 +90,17 @@ contract DSCEngine is IDSCEngine, ReentrancyGuard {
      * @notice follow CEI pattern ( Check, Effect, Interactions )
      */
     function depositCollateral(address tokenCollateralAddress, uint256 collateralAmount)
-        internal
+        public
         // CHECK HAPPENED IN MODIFIER
         MoreThanZero(collateralAmount)
         isAllowedToken(tokenCollateralAddress)
         nonReentrant
     {
         address[] memory collateralAssets = s_collateralTokens;
+        uint256 senderBalance = IERC20(tokenCollateralAddress).balanceOf(msg.sender);
 
-        for(uint256 i = 0; i < collateralAssets.length; i++) {
-            uint256 senderBalance = IERC20(collateralAssets[i]).balanceOf(msg.sender);
-            if(senderBalance == 0 || senderBalance <= collateralAmount) {
-                revert DSCEngine_InsufficientCollateralBalance(collateralAmount, senderBalance);
-            }
+        if(senderBalance == 0 || senderBalance <= collateralAmount) {
+            revert DSCEngine_InsufficientCollateralBalance();
         }
 
         //  Effect
@@ -178,9 +176,6 @@ contract DSCEngine is IDSCEngine, ReentrancyGuard {
      */
     function mintDSC(uint256 amountDscToMint) public MoreThanZero(amountDscToMint) nonReentrant {
         s_DSCMinted[msg.sender] += amountDscToMint;
-
-        // needs to do the checking for the collateral value being deposited before perform the minting
-        // mints only 80% of the collateral value being deposited. 
 
         // this checking to ensure that user can only mint DSC below their collateral value ( $100 collateral => mint DSC $50 for 50% liq threshold )
         _revertIfTotalCollateralBelowHealthFactor(msg.sender);
