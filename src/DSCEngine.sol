@@ -90,7 +90,7 @@ contract DSCEngine is IDSCEngine, ReentrancyGuard {
      * @notice follow CEI pattern ( Check, Effect, Interactions )
      */
     function depositCollateral(address tokenCollateralAddress, uint256 collateralAmount)
-        public
+        internal
         // CHECK HAPPENED IN MODIFIER
         MoreThanZero(collateralAmount)
         isAllowedToken(tokenCollateralAddress)
@@ -126,8 +126,6 @@ contract DSCEngine is IDSCEngine, ReentrancyGuard {
         mintDSC(amountDscToMint);
     }
 
-    function depositCollateralForDSC() external {}
-
     function redeemCollateralForDSC(address tokenCollateral, uint256 amountCollateral, uint256 amountDscToBurn) external {
         burnDSC(amountDscToBurn);
         redeemCollateral(tokenCollateral, amountCollateral);
@@ -145,7 +143,7 @@ contract DSCEngine is IDSCEngine, ReentrancyGuard {
 
     /**
         @notice another user could liquidate other user position if their collateral goes below health factor, And owns the liquidated user balance. An undercollateralized measurements is based of a liquidation threshold (10%/20%/so on),
-        a user B or another user must hold the more or same amount of RUSD token with the user being liquidated.
+        a user B or another user must hold more or the same amount of RUSD token with the user being liquidated.
         @param collateral - a collateral assets address
         @param user - a user address
         @param debtToCover - an amount that needs tobe paid in order to liquidate another user to cover the debt of being under collateral
@@ -240,7 +238,7 @@ contract DSCEngine is IDSCEngine, ReentrancyGuard {
     {
         if (totalDscMinted == 0) return type(uint256).max;
         // if liq threshold is 80% of the collateral value (ex: $1000 collateral value, then u can mint $800 of RUSD token)
-        // (1000 * 80) / 100 = 800 (80% from collateral value)
+        // ($1000 * 80) / 100 = 800 (80% from collateral value)
         uint256 collateralAdjustedForThreshold = (collateralValueInUsd * LIQUIDATION_THRESHOLD) / LIQUIDATION_PRECISION;
         return (collateralAdjustedForThreshold * PRECISION) / totalDscMinted;
     }  
